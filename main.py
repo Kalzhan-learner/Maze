@@ -20,10 +20,10 @@ class Window:
         # Добавляем обработчик закрытия окна
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
 
-     # Метод для получения доступа к холсту
+    # Метод для получения доступа к холсту
     def get_canvas(self):
         return self.__canvas
-    
+
     # Метод перерисовки
     def redraw(self):
         # Перерисовываем окно
@@ -45,10 +45,6 @@ class Window:
         self.__running = False
         self.redraw()  # Перерисовываем один последний раз перед закрытием
         self.__root.quit()  # Закрываем приложение
-
-    def draw_line(self, line, fill_color):
-        # Вызываем метод draw() объекта Line для рисования линии
-        line.draw(self.__canvas, fill_color)
 
 class Point:
     def __init__(self, x, y):
@@ -93,6 +89,20 @@ class Cell:
         if self.has_bottom_wall:
             canvas.create_line(self._x1, self._y2, self._x2, self._y2, fill="black", width=2)
 
+    def draw_move(self, to_cell, canvas, undo=False):
+        # Вычисляем центры текущей ячейки и целевой ячейки
+        center_x1 = (self._x1 + self._x2) / 2
+        center_y1 = (self._y1 + self._y2) / 2
+        center_x2 = (to_cell._x1 + to_cell._x2) / 2
+        center_y2 = (to_cell._y1 + to_cell._y2) / 2
+        
+        # Если undo не задано, линия будет красной
+        line_color = "red" if not undo else "gray"
+        
+        # Рисуем линию от центра текущей ячейки к центру целевой ячейки
+        line = Line(Point(center_x1, center_y1), Point(center_x2, center_y2))
+        line.draw(canvas, line_color)
+
 # Основная функция
 def main():
     win = Window(800, 600)  # Создаем окно размером 800x600
@@ -110,6 +120,12 @@ def main():
     cell2.draw(canvas)
     cell3.draw(canvas)
     cell4.draw(canvas)
+
+    # Прорисовываем путь между ячейками
+    cell1.draw_move(cell2, canvas)  # Путь от cell1 до cell2 (красная линия)
+    cell2.draw_move(cell3, canvas)  # Путь от cell2 до cell3 (красная линия)
+    cell3.draw_move(cell4, canvas, undo=True)  # Путь от cell3 до cell4 (серый, для undo)
+
     win.wait_for_close()  # Ожидаем закрытия окна
 
 if __name__ == "__main__":
