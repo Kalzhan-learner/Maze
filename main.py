@@ -1,3 +1,4 @@
+import time
 from tkinter import Tk, BOTH, Canvas
 
 class Window:
@@ -46,23 +47,6 @@ class Window:
         self.redraw()  # Перерисовываем один последний раз перед закрытием
         self.__root.quit()  # Закрываем приложение
 
-class Point:
-    def __init__(self, x, y):
-        self.x = x  # Координата x
-        self.y = y  # Координата y
-
-class Line:
-    def __init__(self, point1, point2):
-        self.point1 = point1  # Первая точка
-        self.point2 = point2  # Вторая точка
-
-    def draw(self, canvas, fill_color):
-        # Метод рисования линии на холсте
-        canvas.create_line(
-            self.point1.x, self.point1.y, 
-            self.point2.x, self.point2.y, 
-            fill=fill_color, width=2
-        )
 
 class Cell:
     def __init__(self, x1, y1, x2, y2, has_left_wall=True, has_right_wall=True, has_top_wall=True, has_bottom_wall=True):
@@ -89,44 +73,59 @@ class Cell:
         if self.has_bottom_wall:
             canvas.create_line(self._x1, self._y2, self._x2, self._y2, fill="black", width=2)
 
-    def draw_move(self, to_cell, canvas, undo=False):
-        # Вычисляем центры текущей ячейки и целевой ячейки
-        center_x1 = (self._x1 + self._x2) / 2
-        center_y1 = (self._y1 + self._y2) / 2
-        center_x2 = (to_cell._x1 + to_cell._x2) / 2
-        center_y2 = (to_cell._y1 + to_cell._y2) / 2
+
+class Maze:
+    def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win):
+        # Параметры лабиринта
+        self.x1 = x1
+        self.y1 = y1
+        self.num_rows = num_rows
+        self.num_cols = num_cols
+        self.cell_size_x = cell_size_x
+        self.cell_size_y = cell_size_y
+        self.win = win
+
+        # Список для хранения ячеек лабиринта
+        self._cells = []
         
-        # Если undo не задано, линия будет красной
-        line_color = "red" if not undo else "gray"
-        
-        # Рисуем линию от центра текущей ячейки к центру целевой ячейки
-        line = Line(Point(center_x1, center_y1), Point(center_x2, center_y2))
-        line.draw(canvas, line_color)
+        # Создаем ячейки
+        self._create_cells()
+
+    def _create_cells(self):
+        # Заполняем список ячейками
+        for i in range(self.num_rows):
+            row = []
+            for j in range(self.num_cols):
+                x1 = self.x1 + j * self.cell_size_x
+                y1 = self.y1 + i * self.cell_size_y
+                x2 = x1 + self.cell_size_x
+                y2 = y1 + self.cell_size_y
+                cell = Cell(x1, y1, x2, y2)  # Ячейка с полными стенами по умолчанию
+                row.append(cell)
+                # Нарисовать ячейку
+                self._draw_cell(i, j, cell)
+            self._cells.append(row)
+
+    def _draw_cell(self, i, j, cell):
+        # Рисуем ячейку на холсте
+        cell.draw(self.win.get_canvas())
+        # Анимация обновления
+        self._animate()
+
+    def _animate(self):
+        # Анимация — обновляем окно и делаем задержку
+        self.win.redraw()
+        time.sleep(0.05)
+
 
 # Основная функция
 def main():
     win = Window(800, 600)  # Создаем окно размером 800x600
-    # Получаем холст через новый метод get_canvas()
-    canvas = win.get_canvas()
-
-    # Создаем несколько ячеек с разными стенками
-    cell1 = Cell(50, 50, 150, 150)  # Ячейка с полными стенами
-    cell2 = Cell(150, 50, 250, 150, has_left_wall=False)  # Ячейка без левой стены
-    cell3 = Cell(50, 150, 150, 250, has_top_wall=False)  # Ячейка без верхней стены
-    cell4 = Cell(150, 150, 250, 250, has_bottom_wall=False)  # Ячейка без нижней стены
-
-    # Рисуем ячейки на холсте
-    cell1.draw(canvas)
-    cell2.draw(canvas)
-    cell3.draw(canvas)
-    cell4.draw(canvas)
-
-    # Прорисовываем путь между ячейками
-    cell1.draw_move(cell2, canvas)  # Путь от cell1 до cell2 (красная линия)
-    cell2.draw_move(cell3, canvas)  # Путь от cell2 до cell3 (красная линия)
-    cell3.draw_move(cell4, canvas, undo=True)  # Путь от cell3 до cell4 (серый, для undo)
+    # Создаем лабиринт
+    maze = Maze(x1=50, y1=50, num_rows=10, num_cols=10, cell_size_x=40, cell_size_y=40, win=win)
 
     win.wait_for_close()  # Ожидаем закрытия окна
+
 
 if __name__ == "__main__":
     main()
