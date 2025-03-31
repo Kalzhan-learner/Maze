@@ -189,3 +189,43 @@ class Maze:
         for row in self._cells:
             for cell in row:
                 cell.visited = False
+
+    def solve(self):
+        # Начинаем решение с первой ячейки (вход)
+        return self._solve_r(0, 0)
+
+    def _solve_r(self, i, j):
+        # Помечаем текущую ячейку как посещенную
+        self._cells[i][j].visited = True
+
+        # Анимация
+        self._animate()
+
+        # Если мы достигли конца (выход)
+        if i == self.num_rows - 1 and j == self.num_cols - 1:
+            return True
+        
+        # Для каждого направления (вверх, вниз, влево, вправо)
+        directions = []
+        if i > 0 and not self._cells[i-1][j].visited and not self._cells[i][j].has_top_wall:
+            directions.append('north')
+        if i < self.num_rows - 1 and not self._cells[i+1][j].visited and not self._cells[i][j].has_bottom_wall:
+            directions.append('south')
+        if j > 0 and not self._cells[i][j-1].visited and not self._cells[i][j].has_left_wall:
+            directions.append('west')
+        if j < self.num_cols - 1 and not self._cells[i][j+1].visited and not self._cells[i][j].has_right_wall:
+            directions.append('east')
+
+        # Если направление ведет к решению, рекурсивно идем дальше
+        for direction in directions:
+            if direction == 'north' and self._solve_r(i-1, j):
+                return True
+            elif direction == 'south' and self._solve_r(i+1, j):
+                return True
+            elif direction == 'west' and self._solve_r(i, j-1):
+                return True
+            elif direction == 'east' and self._solve_r(i, j+1):
+                return True
+
+        # Если ни одно направление не сработало, возвращаем False
+        return False
