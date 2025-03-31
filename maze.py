@@ -68,7 +68,6 @@ class Cell:
             canvas.create_line(self._x1, self._y2, self._x2, self._y2, fill="#d9d9d9", width=2)
 
 
-
 class Maze:
     def __init__(self, x1, y1, num_rows, num_cols, cell_size_x, cell_size_y, win=None):
         self.x1 = x1
@@ -184,3 +183,9 @@ class Maze:
         
         # Рисуем текущую ячейку
         self._draw_cell(i, j, self._cells[i][j])
+
+    def _reset_cells_visited(self):
+        # Проходим по всем ячейкам лабиринта и сбрасываем visited в False
+        for row in self._cells:
+            for cell in row:
+                cell.visited = False

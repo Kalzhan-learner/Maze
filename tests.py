@@ -1,5 +1,5 @@
 import unittest
-from maze import Maze
+from maze import Maze, Cell
 
 class Tests(unittest.TestCase):
     def test_maze_create_cells(self):
@@ -33,6 +33,32 @@ class Tests(unittest.TestCase):
         self.assertFalse(entrance_cell.has_top_wall)
         self.assertFalse(exit_cell.has_right_wall)
         self.assertFalse(exit_cell.has_bottom_wall)
+
+    def test_reset_cells_visited(self):
+        num_cols = 12
+        num_rows = 10
+        m1 = Maze(0, 0, num_rows, num_cols, 10, 10, win=None)  # Передаем None для окна
+        
+        # Делаем несколько обходов, чтобы пометить ячейки как посещенные
+        m1._break_walls_r(0, 0)
+        m1._break_walls_r(1, 0)
+        m1._break_walls_r(2, 0)
+
+        # Проверяем, что visited для некоторых ячеек стало True
+        self.assertTrue(m1._cells[0][0].visited)
+        self.assertTrue(m1._cells[1][0].visited)
+        self.assertTrue(m1._cells[2][0].visited)
+
+        # Сбрасываем visited
+        m1._reset_cells_visited()
+
+        # Проверяем, что все visited стали False
+        self.assertFalse(m1._cells[0][0].visited)
+        self.assertFalse(m1._cells[1][0].visited)
+        self.assertFalse(m1._cells[2][0].visited)
+        for row in m1._cells:
+            for cell in row:
+                self.assertFalse(cell.visited)  # Проверка, что все ячейки сброшены
 
 if __name__ == "__main__":
     unittest.main()
