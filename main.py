@@ -20,6 +20,10 @@ class Window:
         # Добавляем обработчик закрытия окна
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
 
+     # Метод для получения доступа к холсту
+    def get_canvas(self):
+        return self.__canvas
+    
     # Метод перерисовки
     def redraw(self):
         # Перерисовываем окно
@@ -64,24 +68,48 @@ class Line:
             fill=fill_color, width=2
         )
 
+class Cell:
+    def __init__(self, x1, y1, x2, y2, has_left_wall=True, has_right_wall=True, has_top_wall=True, has_bottom_wall=True):
+        # Координаты ячейки
+        self._x1 = x1
+        self._y1 = y1
+        self._x2 = x2
+        self._y2 = y2
+
+        # Стены ячейки
+        self.has_left_wall = has_left_wall
+        self.has_right_wall = has_right_wall
+        self.has_top_wall = has_top_wall
+        self.has_bottom_wall = has_bottom_wall
+
+    def draw(self, canvas):
+        # Рисуем стены ячейки на холсте
+        if self.has_left_wall:
+            canvas.create_line(self._x1, self._y1, self._x1, self._y2, fill="black", width=2)
+        if self.has_right_wall:
+            canvas.create_line(self._x2, self._y1, self._x2, self._y2, fill="black", width=2)
+        if self.has_top_wall:
+            canvas.create_line(self._x1, self._y1, self._x2, self._y1, fill="black", width=2)
+        if self.has_bottom_wall:
+            canvas.create_line(self._x1, self._y2, self._x2, self._y2, fill="black", width=2)
+
 # Основная функция
 def main():
     win = Window(800, 600)  # Создаем окно размером 800x600
-    # Создаем несколько точек
-    p1 = Point(100, 100)
-    p2 = Point(200, 200)
-    p3 = Point(300, 100)
-    p4 = Point(400, 200)
+    # Получаем холст через новый метод get_canvas()
+    canvas = win.get_canvas()
 
-    # Создаем несколько линий
-    line1 = Line(p1, p2)
-    line2 = Line(p2, p3)
-    line3 = Line(p3, p4)
+    # Создаем несколько ячеек с разными стенками
+    cell1 = Cell(50, 50, 150, 150)  # Ячейка с полными стенами
+    cell2 = Cell(150, 50, 250, 150, has_left_wall=False)  # Ячейка без левой стены
+    cell3 = Cell(50, 150, 150, 250, has_top_wall=False)  # Ячейка без верхней стены
+    cell4 = Cell(150, 150, 250, 250, has_bottom_wall=False)  # Ячейка без нижней стены
 
-    # Рисуем линии с различными цветами
-    win.draw_line(line1, "black")
-    win.draw_line(line2, "red")
-    win.draw_line(line3, "blue")
+    # Рисуем ячейки на холсте
+    cell1.draw(canvas)
+    cell2.draw(canvas)
+    cell3.draw(canvas)
+    cell4.draw(canvas)
     win.wait_for_close()  # Ожидаем закрытия окна
 
 if __name__ == "__main__":
